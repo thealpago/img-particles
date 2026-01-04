@@ -106,23 +106,38 @@ export default class GUIView {
 			});
 		}
 
-		// Add click/touch event to container for tablet users
+		// Add click/touch event to container only for tablet users
 		if (container && guiMenu) {
-			container.addEventListener('click', (e) => {
-				// Only toggle if clicking on the canvas area, not on GUI elements
-				if (!e.target.closest('#custom-gui') && !e.target.closest('#gui-toggle')) {
-					guiMenu.classList.toggle('visible');
-				}
-			});
+			// Detect if it's a tablet device
+			const isTablet = () => {
+				const userAgent = navigator.userAgent.toLowerCase();
+				const isMobile = /mobile|android|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+				const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+				const screenWidth = window.innerWidth;
+				
+				// Consider tablet if: has touch + screen size between 768px-1024px, or iPad
+				return hasTouch && isMobile && (screenWidth >= 768 && screenWidth <= 1024) || 
+				       /ipad/i.test(userAgent) ||
+				       (hasTouch && screenWidth >= 768 && !/mobile.*android/i.test(userAgent));
+			};
 
-			// Also add touch support for tablets
-			container.addEventListener('touchstart', (e) => {
-				// Only toggle if touching the canvas area, not on GUI elements
-				if (!e.target.closest('#custom-gui') && !e.target.closest('#gui-toggle')) {
-					e.preventDefault();
-					guiMenu.classList.toggle('visible');
-				}
-			});
+			if (isTablet()) {
+				container.addEventListener('click', (e) => {
+					// Only toggle if clicking on the canvas area, not on GUI elements
+					if (!e.target.closest('#custom-gui') && !e.target.closest('#gui-toggle')) {
+						guiMenu.classList.toggle('visible');
+					}
+				});
+
+				// Also add touch support for tablets
+				container.addEventListener('touchstart', (e) => {
+					// Only toggle if touching the canvas area, not on GUI elements
+					if (!e.target.closest('#custom-gui') && !e.target.closest('#gui-toggle')) {
+						e.preventDefault();
+						guiMenu.classList.toggle('visible');
+					}
+				});
+			}
 		}
 	}
 

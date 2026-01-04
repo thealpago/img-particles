@@ -106,8 +106,8 @@ export default class GUIView {
 			});
 		}
 
-		// Add click/touch event to container only for tablet users
-		if (container && guiMenu) {
+		// Add click event to "Press 'G' To Toggle Menu" text only for tablet users
+		if (guiMenu) {
 			// Detect if it's a tablet device
 			const isTablet = () => {
 				const userAgent = navigator.userAgent.toLowerCase();
@@ -122,21 +122,26 @@ export default class GUIView {
 			};
 
 			if (isTablet()) {
-				container.addEventListener('click', (e) => {
-					// Only toggle if clicking on the canvas area, not on GUI elements
-					if (!e.target.closest('#custom-gui') && !e.target.closest('#gui-toggle')) {
+				// Find the "Press 'G' To Toggle Menu" text element
+				const toggleText = document.querySelector('.toggle-text');
+				
+				if (toggleText) {
+					toggleText.addEventListener('click', (e) => {
+						e.stopPropagation();
 						guiMenu.classList.toggle('visible');
-					}
-				});
+					});
 
-				// Also add touch support for tablets
-				container.addEventListener('touchstart', (e) => {
-					// Only toggle if touching the canvas area, not on GUI elements
-					if (!e.target.closest('#custom-gui') && !e.target.closest('#gui-toggle')) {
+					// Also add touch support for tablets
+					toggleText.addEventListener('touchstart', (e) => {
 						e.preventDefault();
+						e.stopPropagation();
 						guiMenu.classList.toggle('visible');
-					}
-				});
+					});
+
+					// Make the text look clickable on tablets
+					toggleText.style.cursor = 'pointer';
+					toggleText.style.textDecoration = 'underline';
+				}
 			}
 		}
 	}

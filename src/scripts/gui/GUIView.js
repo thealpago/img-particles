@@ -106,11 +106,12 @@ export default class GUIView {
 				guiMenu.classList.toggle('visible');
 			});
 			
-			// Also prevent touch events on the toggle button from bubbling
-			toggleBtn.addEventListener('touchstart', (e) => {
+			// Add touchend for mobile devices
+			toggleBtn.addEventListener('touchend', (e) => {
 				e.preventDefault();
 				e.stopPropagation();
 				e.stopImmediatePropagation();
+				guiMenu.classList.toggle('visible');
 			});
 		}
 	}

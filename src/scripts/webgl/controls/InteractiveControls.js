@@ -114,6 +114,15 @@ export default class InteractiveControls extends EventEmitter {
 	}
 
 	onMove(e) {
+		// Check if touch is on GUI toggle button - if so, don't handle it
+		if (e.touches) {
+			const touch = e.touches[0];
+			const element = document.elementFromPoint(touch.clientX, touch.clientY);
+			if (element && (element.id === 'gui-toggle' || element.closest('#gui-toggle'))) {
+				return; // Don't handle touch events on GUI toggle button
+			}
+		}
+
 		// Prevent page scrolling on touch devices when interacting with particles
 		if (e.touches) {
 			e.preventDefault();
@@ -171,6 +180,15 @@ export default class InteractiveControls extends EventEmitter {
 	}
 
 	onDown(e) {
+		// Check if touch is on GUI toggle button - if so, don't handle it
+		if (e.touches) {
+			const touch = e.touches[0];
+			const element = document.elementFromPoint(touch.clientX, touch.clientY);
+			if (element && (element.id === 'gui-toggle' || element.closest('#gui-toggle'))) {
+				return; // Don't handle touch events on GUI toggle button
+			}
+		}
+
 		// Prevent default behavior for all touch events to avoid unwanted click events
 		if (e.touches) {
 			e.preventDefault();
@@ -217,6 +235,17 @@ export default class InteractiveControls extends EventEmitter {
 	}
 
 	onUp(e) {
+		// Check if touch is on GUI toggle button - if so, don't handle it
+		if (e.touches || e.changedTouches) {
+			const touch = e.touches ? e.touches[0] : e.changedTouches[0];
+			if (touch) {
+				const element = document.elementFromPoint(touch.clientX, touch.clientY);
+				if (element && (element.id === 'gui-toggle' || element.closest('#gui-toggle'))) {
+					return; // Don't handle touch events on GUI toggle button
+				}
+			}
+		}
+
 		// Prevent event bubbling for touch events
 		if (e.touches || e.changedTouches) {
 			e.stopPropagation();

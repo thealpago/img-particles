@@ -117,6 +117,7 @@ export default class InteractiveControls extends EventEmitter {
 		// Prevent page scrolling on touch devices when interacting with particles
 		if (e.touches) {
 			e.preventDefault();
+			e.stopPropagation();
 		}
 
 		// Ensure cursor stays default
@@ -170,8 +171,11 @@ export default class InteractiveControls extends EventEmitter {
 	}
 
 	onDown(e) {
-		// Don't prevent default on touchstart to allow tablet scrolling
-		// Only prevent on touchmove when actually interacting with particles
+		// Prevent default behavior for all touch events to avoid unwanted click events
+		if (e.touches) {
+			e.preventDefault();
+			e.stopPropagation();
+		}
 
 		this.isDown = true;
 
@@ -180,7 +184,6 @@ export default class InteractiveControls extends EventEmitter {
 		let isLeftClick = !e.touches && e.button === 0;
 		if (e.touches && e.touches.length === 2) {
 			isLeftClick = true;
-			e.preventDefault(); // Prevent default zoom/scroll gestures when using 2 fingers
 		}
 
 		const isMiddleClick = !e.touches && e.button === 1;
@@ -214,6 +217,11 @@ export default class InteractiveControls extends EventEmitter {
 	}
 
 	onUp(e) {
+		// Prevent event bubbling for touch events
+		if (e.touches || e.changedTouches) {
+			e.stopPropagation();
+		}
+
 		this.isDown = false;
 
 		// For mouse: standard check
@@ -248,6 +256,11 @@ export default class InteractiveControls extends EventEmitter {
 	}
 
 	onLeave(e) {
+		// Prevent event bubbling for touch events
+		if (e.touches || e.changedTouches) {
+			e.stopPropagation();
+		}
+
 		this.onUp(e);
 
 		this.emit('interactive-out', { object: this.hovered });

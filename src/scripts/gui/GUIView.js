@@ -100,8 +100,17 @@ export default class GUIView {
 
 		if (toggleBtn && guiMenu) {
 			toggleBtn.addEventListener('click', (e) => {
+				e.preventDefault();
 				e.stopPropagation();
+				e.stopImmediatePropagation();
 				guiMenu.classList.toggle('visible');
+			});
+			
+			// Also prevent touch events on the toggle button from bubbling
+			toggleBtn.addEventListener('touchstart', (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				e.stopImmediatePropagation();
 			});
 		}
 	}

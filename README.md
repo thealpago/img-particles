@@ -1,18 +1,11 @@
 # Interactive Image Particles
 
-![GitHub repo size](https://img.shields.io/github/repo-size/thealpago/testfortab)
-![GitHub language count](https://img.shields.io/github/languages/count/thealpago/testfortab)
-![GitHub top language](https://img.shields.io/github/languages/top/thealpago/testfortab)
-![GitHub last commit](https://img.shields.io/github/last-commit/thealpago/testfortab)
-![GitHub license](https://img.shields.io/github/license/thealpago/testfortab)
-
-**GitHub Repository:** https://github.com/thealpago/testfortab.git
 
 An interactive web experience that creates stunning particle effects from photographs using Three.js and WebGL. This project demonstrates how to transform static images into dynamic, responsive particle systems that react to user interactions.
 
 ## 🌟 Demo
 
-**Live Demo:** [View Interactive Demo](https://thealpago.github.io/testfortab/)
+Run the project locally to see the interactive demo.
 
 ## 📸 Screenshots
 
@@ -107,8 +100,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🔗 Links
 
-- **Live Demo:** [View Interactive Demo](https://thealpago.github.io/testfortab/)
-- **GitHub Repository:** https://github.com/thealpago/testfortab.git
-- **Report Issues:** [GitHub Issues](https://github.com/thealpago/testfortab/issues)
-- **Request Features:** [GitHub Issues](https://github.com/thealpago/testfortab/issues/new)
+- **Report Issues:** Create an issue in your local repository
+- **Request Features:** Create an issue in your local repository
 

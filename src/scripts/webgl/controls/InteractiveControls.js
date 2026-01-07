@@ -56,25 +56,12 @@ export default class InteractiveControls extends EventEmitter {
 		this.handlerLeave = this.onLeave.bind(this);
 		this.handlerContextMenu = this.onContextMenu.bind(this);
 
-		const isTouch = this.browser.mobile || this.browser.tablet || (window.navigator.maxTouchPoints > 0);
-
-		if (isTouch) {
+		if (this.browser.mobile) {
 			this.el.addEventListener('touchstart', this.handlerDown, { passive: false });
 			this.el.addEventListener('touchmove', this.handlerMove, { passive: false });
 			this.el.addEventListener('touchend', this.handlerUp, { passive: false });
 		}
-
-		// For hybrid devices or desktop fallback, also listen to mouse events if needed.
-		// However, to mimic original logic's separation:
-		if (!isTouch || (isTouch && !this.browser.mobile)) {
-			// On tablets/hybrid, we might want mouse events too if touch not fired,
-			// or simply use mouse events as fallback. 
-			// But creating duplicates might be an issue. 
-			// Let's stick to the else logic but simply expanded 'if' to include tablets.
-			// Actually, let's keep the either-or logic but expanded, to avoid double-firing on some Androids.
-		}
-
-		if (!isTouch) {
+		else {
 			this.el.addEventListener('mousedown', this.handlerDown);
 			this.el.addEventListener('mousemove', this.handlerMove);
 			this.el.addEventListener('mouseup', this.handlerUp);
@@ -84,15 +71,12 @@ export default class InteractiveControls extends EventEmitter {
 	}
 
 	removeListeners() {
-		const isTouch = this.browser.mobile || this.browser.tablet || (window.navigator.maxTouchPoints > 0);
-
-		if (isTouch) {
+		if (this.browser.mobile) {
 			this.el.removeEventListener('touchstart', this.handlerDown);
 			this.el.removeEventListener('touchmove', this.handlerMove);
 			this.el.removeEventListener('touchend', this.handlerUp);
 		}
-
-		if (!isTouch) {
+		else {
 			this.el.removeEventListener('mousedown', this.handlerDown);
 			this.el.removeEventListener('mousemove', this.handlerMove);
 			this.el.removeEventListener('mouseup', this.handlerUp);
@@ -114,26 +98,16 @@ export default class InteractiveControls extends EventEmitter {
 	}
 
 	onMove(e) {
-		// Check if touch is on GUI toggle button - if so, don't handle it
-		if (e.touches) {
-			const touch = e.touches[0];
-			const element = document.elementFromPoint(touch.clientX, touch.clientY);
-			if (element && (element.id === 'gui-toggle' || element.closest('#gui-toggle'))) {
-				return; // Don't handle touch events on GUI toggle button
-			}
-		}
-
 		// Prevent page scrolling on touch devices when interacting with particles
 		if (e.touches) {
 			e.preventDefault();
-			e.stopPropagation();
 		}
-
+		
 		// Ensure cursor stays default
 		if (this.el !== window) {
 			this.el.style.cursor = 'default';
 		}
-
+		
 		const t = (e.touches) ? e.touches[0] : e;
 		const touch = { x: t.clientX, y: t.clientY };
 
@@ -180,30 +154,13 @@ export default class InteractiveControls extends EventEmitter {
 	}
 
 	onDown(e) {
-		// Check if touch is on GUI toggle button - if so, don't handle it
-		if (e.touches) {
-			const touch = e.touches[0];
-			const element = document.elementFromPoint(touch.clientX, touch.clientY);
-			if (element && (element.id === 'gui-toggle' || element.closest('#gui-toggle'))) {
-				return; // Don't handle touch events on GUI toggle button
-			}
-		}
-
-		// Prevent default behavior for all touch events to avoid unwanted click events
-		if (e.touches) {
-			e.preventDefault();
-			e.stopPropagation();
-		}
-
+		// Don't prevent default on touchstart to allow tablet scrolling
+		// Only prevent on touchmove when actually interacting with particles
+		
 		this.isDown = true;
 
 		// Check for left mouse click (button 0) and middle mouse click (button 1)
-		// For mobile: treat 2-finger touch as left click (trigger explosion)
-		let isLeftClick = !e.touches && e.button === 0;
-		if (e.touches && e.touches.length === 2) {
-			isLeftClick = true;
-		}
-
+		const isLeftClick = !e.touches && e.button === 0;
 		const isMiddleClick = !e.touches && e.button === 1;
 
 		// Prevent default action on middle click (like auto-scroll)
@@ -214,8 +171,8 @@ export default class InteractiveControls extends EventEmitter {
 		// Update rect on touch start to handle dynamic mobile viewports
 		if (e.touches) {
 			this.resize();
-
-			// For single touch, we use the first touch point for position
+			// this.onMove(e); // Let touchmove handle movement, just set down here?
+			// But we need initial position.
 			const t = e.touches[0];
 			this.mouse.x = ((t.clientX - this.rect.x) / this.rect.width) * 2 - 1;
 			this.mouse.y = -((t.clientY - this.rect.y) / this.rect.height) * 2 + 1;
@@ -235,43 +192,9 @@ export default class InteractiveControls extends EventEmitter {
 	}
 
 	onUp(e) {
-		// Check if touch is on GUI toggle button - if so, don't handle it
-		if (e.touches || e.changedTouches) {
-			const touch = e.touches ? e.touches[0] : e.changedTouches[0];
-			if (touch) {
-				const element = document.elementFromPoint(touch.clientX, touch.clientY);
-				if (element && (element.id === 'gui-toggle' || element.closest('#gui-toggle'))) {
-					return; // Don't handle touch events on GUI toggle button
-				}
-			}
-		}
-
-		// Prevent event bubbling for touch events
-		if (e.touches || e.changedTouches) {
-			e.stopPropagation();
-		}
-
 		this.isDown = false;
 
-		// For mouse: standard check
-		let isLeftClick = !e.touches && e.button === 0;
-		// For mobile: onUp is called when a finger is lifted.
-		// If we were performing a 2-finger action, and lift a finger, we should treat it as 'releasing' the click.
-		// e.touches contains remaining touches. If it was 2 (triggered action) and now becomes < 2, we end action.
-		// However, standard onUp might not carry previous state easily without tracking.
-		// But since we want "Left Click Up" logic which calls startReform(), we can just pass isLeftClick=true
-		// if we suspect this was a 2-finger release.
-		// A simple heuristic: if it's a touch event, and we are lifting fingers, treat it as finishing the 'click' interaction potentially.
-		// Or strictly: if e.touches.length < 2 (meaning we no longer have 2 fingers), we end action.
-		if (e.changedTouches) {
-			// If we just lifted a finger/fingers and now have fewer than 2 fingers, cancel effect.
-			// Effectively, if we were doing the effect (2 fingers) and stop (0 or 1 finger), we want to stop.
-			// Sending isLeftClick = true causes startReform(), which is safe to call even if not exploding.
-			if (e.touches.length < 2) {
-				isLeftClick = true;
-			}
-		}
-
+		const isLeftClick = !e.touches && e.button === 0;
 		const isMiddleClick = !e.touches && e.button === 1;
 
 		this.emit('interactive-up', { object: this.hovered, isLeftClick, isMiddleClick });
@@ -285,11 +208,6 @@ export default class InteractiveControls extends EventEmitter {
 	}
 
 	onLeave(e) {
-		// Prevent event bubbling for touch events
-		if (e.touches || e.changedTouches) {
-			e.stopPropagation();
-		}
-
 		this.onUp(e);
 
 		this.emit('interactive-out', { object: this.hovered });

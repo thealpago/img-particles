@@ -16,11 +16,18 @@
 	<link rel="stylesheet" type="text/css" href="css/custom-gui.css" />
 	<link rel="stylesheet" type="text/css" href="css/mobile-styles.css" />
 	<link rel="stylesheet" type="text/css" href="css/controls.css" />
+	<link rel="stylesheet" type="text/css" href="css/intro-screen.css" />
 	<script>document.documentElement.className = "js"; var supportsCssVars = function () { var e, t = document.createElement("style"); return t.innerHTML = "root: { --tmp-var: bold; }", document.head.appendChild(t), e = !!(window.CSS && window.CSS.supports && window.CSS.supports("font-weight", "var(--tmp-var)")), t.parentNode.removeChild(t), e }; supportsCssVars() || alert("Please view this demo in a modern browser that supports CSS Variables.");</script>
 </head>
 
 <body class="demo-1">
-	<main>
+	<!-- Giriş Ekranı -->
+	<div id="intro-screen" class="intro-screen">
+		<button id="enter-btn" class="enter-button">Red<br>Collection</button>
+		<button id="asian-btn" class="asian-button">ASİAN<br>COLLECTIONS</button>
+	</div>
+
+	<main id="main-content" style="display: none;">
 
 		<button id="gui-toggle" class="gui-toggle">
 			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -63,8 +70,9 @@
 			<div class="gui-instructions">
 				<h3>Instructions</h3>
 				<p>PRESS 'G' TO TOGGLE MENU</p>
-				<p>Hover your mouse over the image; the interactive particle will activate.</p>
-				<p>Press and hold the left mouse button to disperse particles.</p>
+				<p>PRESS 'F' TO RETURN TO COLLECTIONS</p>
+				<p>Hover your mouse over image; interactive particle will activate.</p>
+				<p>Press and hold left mouse button to disperse particles.</p>
 				<p>You can navigate between photos using the arrow keys.</p>
 				<div class="gui-keys">
 					<div class="gui-key mouse-key">
@@ -94,6 +102,8 @@
 			</div>
 		</div>
 		<div class="gui-info">Press 'G' to toggle menu</div>
+	<div class="return-info">PRESS 'F' TO RETURN</div>
+	<button class="mobile-return-btn" id="mobile-return-btn">COLLECTIONS</button>
 		<div class="photo-controls-container">
 			<button id="prev-btn" class="nav-arrow">
 				<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -112,6 +122,88 @@
 		<div id="photo-nav" class="photo-nav"></div>
 	</main>
 	<div class="container"></div>
+
+	<script>
+		// Giriş Ekranı Fonksiyonu
+		document.addEventListener('DOMContentLoaded', function() {
+			const introScreen = document.getElementById('intro-screen');
+			const enterBtn = document.getElementById('enter-btn');
+			const asianBtn = document.getElementById('asian-btn');
+			const mainContent = document.getElementById('main-content');
+			const mobileReturnBtn = document.getElementById('mobile-return-btn');
+			let isAppInitialized = false;
+			
+			enterBtn.addEventListener('click', function() {
+				// Giriş ekranını gizle
+				introScreen.classList.add('hidden');
+				
+				// Ana içeriği göster
+				setTimeout(() => {
+					mainContent.style.display = 'block';
+					// Uygulamayı sadece ilk kez başlat
+					if (!isAppInitialized && window.app) {
+						window.app.init();
+						isAppInitialized = true;
+					}
+					// Red Collection'a geç (varsayılan zaten ama emin olmak için)
+					if (window.app && window.app.webgl) {
+						window.app.webgl.switchCollection('red');
+					}
+				}, 800);
+			});
+
+			asianBtn.addEventListener('click', function() {
+				// Giriş ekranını gizle
+				introScreen.classList.add('hidden');
+				
+				// Ana içeriği göster
+				setTimeout(() => {
+					mainContent.style.display = 'block';
+					// Uygulamayı sadece ilk kez başlat
+					if (!isAppInitialized && window.app) {
+						window.app.init();
+						isAppInitialized = true;
+					}
+					// Asian Collection'a geç
+					if (window.app && window.app.webgl) {
+						window.app.webgl.switchCollection('asian');
+					}
+				}, 800);
+			});
+
+			// Mobil geri dön butonu
+			mobileReturnBtn.addEventListener('click', function() {
+				// Ana içeriği gizle
+				mainContent.style.display = 'none';
+				
+				// Giriş ekranını göster
+				introScreen.classList.remove('hidden');
+				
+				// Uygulamayı tamamen durdur
+				if (window.app && window.app.destroy) {
+					window.app.destroy();
+					isAppInitialized = false;
+				}
+			});
+
+			// F tuşu ile giriş ekranına dönüş
+			document.addEventListener('keydown', function(event) {
+				if (event.key === 'f' || event.key === 'F') {
+					// Ana içeriği gizle
+					mainContent.style.display = 'none';
+					
+					// Giriş ekranını göster
+					introScreen.classList.remove('hidden');
+					
+					// Uygulamayı tamamen durdur
+					if (window.app && window.app.destroy) {
+						window.app.destroy();
+						isAppInitialized = false;
+					}
+				}
+			});
+		});
+	</script>
 </body>
 
 </html>

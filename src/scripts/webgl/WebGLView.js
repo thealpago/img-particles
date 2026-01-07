@@ -11,7 +11,8 @@ export default class WebGLView {
 	constructor(app) {
 		this.app = app;
 
-		this.samples = [
+		// Red Collection (images klasörü)
+		this.redSamples = [
 			'static/images/sample-01.jpg',
 			'static/images/sample-02.jpg',
 			'static/images/sample-03.jpg',
@@ -33,8 +34,23 @@ export default class WebGLView {
 			'static/images/sample-19.jpg',
 			'static/images/sample-20.jpg',
 			'static/images/sample-21.jpg',
-
 		];
+
+		// Asian Collection (images2 klasörü)
+		this.asianSamples = [
+			'static/images2/sample-01.jpg',
+			'static/images2/sample-02.jpg',
+			'static/images2/sample-03.jpg',
+			'static/images2/sample-04.jpg',
+			'static/images2/sample-05.jpg',
+			'static/images2/sample-06.jpg',
+			'static/images2/sample-07.jpg',
+			'static/images2/sample-08.jpg',
+			'static/images2/sample-09.jpg',
+		];
+
+		// Varsayılan olarak Red Collection kullan
+		this.samples = this.redSamples;
 
 		this.photoNames = [			
 			'AI Work',
@@ -58,8 +74,25 @@ export default class WebGLView {
 			'AI Work 19',
 			'AI Work 20',
 			'AI Work 21',
-
 		];
+
+		this.asianPhotoNames = [
+			'AI Work 1',
+			'AI Work 2',
+			'AI Work 3',
+			'AI Work 4',
+			'AI Work 5',
+			'AI Work 6',
+			'AI Work 7',
+			'AI Work 8',
+			'AI Work 9',
+		];
+
+		// Varsayılan olarak Red Collection isimlerini kullan
+		this.currentPhotoNames = this.photoNames;
+		
+		// Mevcut koleksiyonu takip et
+		this.currentCollection = 'red';
 
 		this.initThree();
 		this.initParticles();
@@ -129,8 +162,68 @@ export default class WebGLView {
 		if (!this.titleElement) return;
 
 		// Remove animation - just update text directly
-		this.titleElement.innerText = this.photoNames[index] || '';
+		this.titleElement.innerText = this.currentPhotoNames[index] || '';
 		this.titleElement.classList.add('visible');
+	}
+
+	// Koleksiyon değiştirme metodu
+	switchCollection(collectionType) {
+		this.currentCollection = collectionType;
+		
+		if (collectionType === 'asian') {
+			this.samples = this.asianSamples;
+			this.currentPhotoNames = this.asianPhotoNames;
+		} else {
+			this.samples = this.redSamples;
+			this.currentPhotoNames = this.photoNames;
+		}
+		
+		// Navigasyon dot'larını yeniden oluştur (önce yap)
+		this.rebuildNav();
+		
+		// Mevcut partikül sistemini temizle ve yenisi oluştur
+		if (this.particles) {
+			this.scene.remove(this.particles.container);
+			this.particles = null;
+		}
+		
+		// Yeni partikül sistemi oluştur
+		this.initParticles();
+		
+		// İlk fotoğrafa git
+		this.currSample = null; // Reset current sample to force reinit
+		this.goto(0);
+	}
+
+	rebuildNav() {
+		// Mevcut nav dot'larını temizle
+		if (this.navContainer) {
+			this.navContainer.innerHTML = '';
+		}
+		
+		this.navDots = [];
+
+		this.samples.forEach((sample, index) => {
+			const wrapper = document.createElement('div');
+			wrapper.className = 'nav-dot-wrapper';
+
+			const dot = document.createElement('div');
+			dot.className = 'nav-dot';
+
+			const ring = document.createElement('div');
+			ring.className = 'active-ring';
+
+			wrapper.appendChild(dot);
+			wrapper.appendChild(ring);
+
+			wrapper.addEventListener('click', (e) => {
+				e.stopPropagation(); // Prevent trigger click on renderer
+				this.goto(index);
+			});
+
+			this.navContainer.appendChild(wrapper);
+			this.navDots.push(wrapper);
+		});
 	}
 
 	updateNav(index) {
@@ -196,7 +289,9 @@ export default class WebGLView {
 		localStorage.setItem('current_photo_index', index.toString());
 		
 		// init next
-		if (this.currSample == null) this.particles.init(this.samples[index]);
+		if (this.currSample == null) {
+			this.particles.init(this.samples[index]);
+		}
 		// hide curr then init next
 		else {
 			this.particles.hide(true).then(() => {

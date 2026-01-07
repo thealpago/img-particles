@@ -56,11 +56,30 @@ module.exports = {
 					from: path.resolve(__root, 'static'),
 					to: path.resolve(__root, 'dist'),
 					noErrorOnMissing: true
+				},
+				{
+					from: path.resolve(__root, '.nojekyll'),
+					to: path.resolve(__root, 'dist'),
+					noErrorOnMissing: true
 				}
 			]
 		}),
 		new HtmlWebpackPlugin({
 			template: './src/index.html',
+			filename: 'index.html',
+			inject: 'body',
+			minify: {
+				removeComments: true,
+				collapseWhitespace: true,
+				removeRedundantAttributes: true,
+				useShortDoctype: true,
+				removeEmptyAttributes: true,
+				removeStyleLinkTypeAttributes: true,
+				keepClosingSlash: true,
+				minifyJS: true,
+				minifyCSS: true,
+				minifyURLs: true,
+			},
 		}),
 		new webpack.ProvidePlugin({
 			'THREE': 'three'
